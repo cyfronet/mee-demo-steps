@@ -1,0 +1,38 @@
+#!/bin/bash -l
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=00:05:00
+#SBATCH -A {{ grant_id }}
+#SBATCH -p plgrid-testing
+
+# Finish with error on first command with error
+set -e
+
+## Change to the directory where sbatch was called
+cd $SCRATCHDIR
+
+## Clone repository and switch into selected revision
+echo Preparing computation source code
+echo --------------------START-----------------------------
+{% clone_repo %}
+echo --------------------END-------------------------------
+
+echo Downloading numbers
+echo --------------------START-----------------------------
+{% stage_in demo_steps %}
+echo --------------------END-------------------------------
+
+## Load ruby module and execute calculation
+echo Generating random numbers
+echo --------------------START-----------------------------
+module load plgrid/tools/gnuplot
+module load plgrid/tools/ffmpeg
+
+bash mee-demo-steps/2_visualization.bash
+echo --------------------END-------------------------------
+
+echo Uploading results
+echo --------------------START-----------------------------
+{% stage_out plot.gif %}
+echo --------------------END-------------------------------
+echo Finish

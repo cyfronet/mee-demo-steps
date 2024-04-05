@@ -1,0 +1,35 @@
+#!/bin/bash -l
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=00:01:00
+#SBATCH -A {{ grant_id }}
+#SBATCH -p plgrid-testing
+
+# Finish with error on first command with error
+set -e
+
+## Change to the directory where sbatch was called
+cd $SCRATCHDIR
+
+## Clone repository and switch into selected revision
+echo Preparing computation source code
+echo --------------------START-----------------------------
+{% clone_repo %}
+echo --------------------END-------------------------------
+
+echo Downloading numbers
+echo --------------------START-----------------------------
+{% stage_in_artifact numbers.txt %}
+echo --------------------END-------------------------------
+
+echo Sorting
+module load python/3.10.4-gcccore-11.3.0
+echo --------------------START-----------------------------
+python mee-demo-steps/1_sort.py
+echo --------------------END-------------------------------
+
+echo Uploading results
+echo --------------------START-----------------------------
+{% stage_out_artifact steps.txt %}
+echo --------------------END-------------------------------
+echo Finish
